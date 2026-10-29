@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.application'
+}
+
+// The workflow passes these in. Locally they fall back to harmless defaults.
+def runNumber = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInteger()
+def appOrg = System.getenv("APP_ORG") ?: "io.github.mdetizen"
+def keystorePath = System.getenv("KEYSTORE_PATH")
+
+android {
+    namespace 'io.github.mdetizen.billbubbles'
+    compileSdk 34
+
+    defaultConfig {
+        // Permanent app ID. Same as the Flutter version's ID so either build can be published under it.
+        applicationId "${appOrg}.billbubbles"
+        minSdk 21
+        targetSdk 34
+        versionCode runNumber
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePath) {
+                storeFile file(keystorePath)
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (keystorePath) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
